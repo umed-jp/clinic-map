@@ -80,14 +80,8 @@
         const endpointUrl =
           "https://storage.googleapis.com/ss_geolocation/cl6.json";
 
-        fetch(endpointUrl, {
-          credentials: "same-origin",
-          mode: "no-cors",
-        })
+        fetch(endpointUrl)
           .then(function (response) {
-            if (!response.type == "opaque") {
-              throw new Error("Network response was not ok");
-            }
             if (!response.ok) {
               throw new Error("Network response was not ok");
             }
