@@ -78,10 +78,16 @@
         });
 
         const endpointUrl =
-          "https://ssmapdata.blob.core.windows.net/map/cl6.json";
+          "https://storage.cloud.google.com/ss_geolocation/cl6.json";
 
-        fetch(endpointUrl)
+        fetch(endpointUrl, {
+          credentials: "same-origin",
+          mode: "no-cors",
+        })
           .then(function (response) {
+            if (!response.type == "opaque") {
+              throw new Error("Network response was not ok");
+            }
             if (!response.ok) {
               throw new Error("Network response was not ok");
             }
