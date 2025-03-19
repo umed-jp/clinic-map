@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Clinic Map</title>
+    <!-- Replace YOUR_API_KEY with your actual Google Maps API key -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyATrvYxDldKvqNigJs6o3AYVeZDqaBywOY"></script>
+    <script>
+      var infoWindow; // Global InfoWindow
+
+      function initMap() {
+        var center = { lat: 35.665, lng: 140.087 }; // Inage, Chiba coordinates
+        var map = new google.maps.Map(document.getElementById("map"), {
+          center: center,
+          zoom: 12,
+        });
+
+        // Initialize the global infoWindow
+        infoWindow = new google.maps.InfoWindow();
+
+        // Set custom styling for the markers based on property status
+        map.data.setStyle(function (feature) {
+          var status = feature.getProperty("status");
+          var color;
+          // Change color based on the status
+          if (status === "available") {
+            color = "green";
+          } else if (status === "sold") {
+            color = "red";
+          } else if (status === "pending") {
+            color = "orange";
+          } else {
+            color = "blue"; // default color if no matching status
+          }
+          return {
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              fillColor: color,
+              fillOpacity: 0.8,
+              strokeColor: "black",
+              strokeWeight: 1,
+              scale: 8,
+            },
+          };
+        });
+
+        // Add a click event listener to show an InfoWindow with details including status
+        map.data.addListener("click", function (event) {
+          var name = event.feature.getProperty("name");
+          var description = event.feature.getProperty("description");
+          var status = event.feature.getProperty("status");
+          var contentString =
+            "<div><strong>" +
+            name +
+            "</strong><br>" +
+            description +
+            "<br><em>Status: " +
+            status +
+            "</em></div>";
+          infoWindow.setContent(contentString);
+          infoWindow.setPosition(event.latLng);
+          infoWindow.setOptions({ pixelOffset: new google.maps.Size(0, -10) });
+          infoWindow.open(map);
+        });
+
+        // Load GeoJSON data from GCP Cloud Run endpoint
+        loadGeoJSON(map);
+
+        // Optionally, refresh the data every 60 seconds (60000 milliseconds)
+        setInterval(function () {
+          loadGeoJSON(map);
+        }, 60000);
+      }
+
+      function loadGeoJSON(map) {
+        // Remove any existing features on the map
+        map.data.forEach(function (feature) {
+          map.data.remove(feature);
+        });
+
+        // Replace with your actual GCP Cloud Run endpoint URL that returns GeoJSON
+        const endpointUrl =
+          "https://storage.cloud.google.com/ss_geolocation/cl6.json";
+
+        fetch(endpointUrl)
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then(function (geojsonData) {
+            // Add the fetched GeoJSON data to the map
+            console.log(geojsonData);
+            map.data.addGeoJson(geojsonData);
+            console.log("GeoJSON data added to the map.");
+          })
+          .catch(function (error) {
+            console.error("Error loading GeoJSON data:", error);
+          });
+      }
+    </script>
+    <style>
+      /* Set the map container size */
+      #map {
+        height: 100vh;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body onload="initMap()">
+    <div id="map"></div>
+  </body>
+</html>
