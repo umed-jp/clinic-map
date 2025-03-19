@@ -77,9 +77,8 @@
           map.data.remove(feature);
         });
 
-        // Replace with your actual GCP Cloud Run endpoint URL that returns GeoJSON
         const endpointUrl =
-          "https://storage.cloud.google.com/ss_geolocation/cl6.json";
+          "https://ssmapdata.blob.core.windows.net/map/cl6.json";
 
         fetch(endpointUrl)
           .then(function (response) {
